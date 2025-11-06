@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Recognition Absensi</title>
+</head>
+<body>
+    <h2>Absensi Menggunakan wajah</h2>
+
+    <input type="text" id="username" placeholder="Masukkan username"><br><br>
+
+    <video id="video" width="350" height="250" autoplay></video><br>
+    <button onclick="capture()">Absen Sekarang</button>
+
+    <script>
+        // Aktifkan kamera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => video.srcObject = stream);
+
+        function capture() {
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+
+            const face_image = canvas.toDataURL("image/png");
+            const username = document.getElementById("username").value;
+
+            fetch("{{ route('absen.store') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    username,
+                    face_image,
+                    location: "Office"
+                })
+            }).then(res => res.json())
+              .then(res => alert("Absen berhasil!"));
+        }
+    </script>
+</body>
+</html>
